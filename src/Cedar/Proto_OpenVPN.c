@@ -147,7 +147,7 @@ bool OvsProcessData(void *param, TCP_RAW_DATA *in, FIFO *out)
 		payload_size = READ_USHORT(FifoPtr(fifo));
 		packet_size = payload_size + sizeof(USHORT);
 
-		if (payload_size == 0 || packet_size > sizeof(buf))
+		if (payload_size == 0 || payload_size > (sizeof(buf) - sizeof(USHORT)))
 		{
 			ret = false;
 			Debug("OvsProcessData(): Invalid payload size: %u bytes\n", payload_size);
@@ -824,6 +824,10 @@ void OvsProcessRecvControlPacket(OPENVPN_SERVER *s, OPENVPN_SESSION *se, OPENVPN
 				}
 
 				c->SslPipe = NewSslPipeEx(true, s->Cedar->ServerX, s->Cedar->ServerK, s->Dh, true, &c->ClientCert);
+				if (c->SslPipe == NULL)
+				{
+					return;
+				}
 			}
 			Unlock(s->Cedar->lock);
 

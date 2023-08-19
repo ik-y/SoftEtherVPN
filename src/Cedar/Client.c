@@ -22,6 +22,9 @@
 #include "VLanWin32.h"
 #include "Win32Com.h"
 #include "WinUi.h"
+#ifdef	NO_VLAN
+#include "NullLan.h"
+#endif
 
 #include "Mayaqua/Cfg.h"
 #include "Mayaqua/Encrypt.h"
@@ -6524,9 +6527,7 @@ bool CtConnect(CLIENT *c, RPC_CLIENT_CONNECT *connect)
 // Requires account and VLan lists of the CLIENT argument to be already locked
 bool CtVLansDown(CLIENT *c)
 {
-#ifndef UNIX_LINUX
-	return true;
-#else
+#if defined(UNIX_LINUX) || defined(UNIX_BSD)
 	int i;
 	LIST *tmpVLanList;
 	UNIX_VLAN t, *r;
@@ -6568,6 +6569,8 @@ bool CtVLansDown(CLIENT *c)
 
 	ReleaseList(tmpVLanList);
 	return result;
+#else
+	return true;
 #endif
 }
 
@@ -6575,9 +6578,7 @@ bool CtVLansDown(CLIENT *c)
 // Requires VLan list of the CLIENT argument to be already locked
 bool CtVLansUp(CLIENT *c)
 {
-#ifndef UNIX_LINUX
-	return true;
-#else
+#if defined(UNIX_LINUX) || defined(UNIX_BSD)
 	int i;
 	UNIX_VLAN *r;
 
@@ -6591,9 +6592,8 @@ bool CtVLansUp(CLIENT *c)
 		r = LIST_DATA(c->UnixVLanList, i);
 		UnixVLanSetState(r->Name, true);
 	}
-
-	return true;
 #endif
+	return true;
 }
 
 // Get the account information
